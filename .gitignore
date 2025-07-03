@@ -18,6 +18,6 @@ Thumbs.db
 # Jupyter/IPython checkpoints
 .ipynb_checkpoints/
 
-git config --global user.name "srujan mandala"
-git config --global user.email "mandalasrujan@gmail.com"
-git remote add origin https://github.com/Srujanmandala/Heart-attack-analysis_EDA.git
+#git config --global user.name "srujan mandala"
+#git config --global user.email "mandalasrujan@gmail.com"
+g#it remote add origin https://github.com/Srujanmandala/Heart-attack-analysis_EDA.git
