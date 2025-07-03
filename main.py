@@ -53,8 +53,13 @@ print(f"Average Cholesterol: {cholesterol_avg:.2f} mg/dL")
 # ==============================
 
 # 1. Heart Attack by Gender
-gender_counts = df.groupby("Gender")["Heart Attack"].mean() * 100
-gender_counts.plot.pie(autopct="%.1f%%", startangle=90, figsize=(5, 5), title="Heart Attack % by Gender")
+gender_counts = df[df["Heart Attack"] == 1]["Gender"].value_counts()
+gender_counts.plot.pie(
+    autopct="%.1f%%",
+    startangle=90,
+    figsize=(6, 6),
+    title="Distribution of Heart Attacks by Gender"
+)
 plt.ylabel("")
 plt.show()
 
@@ -90,10 +95,24 @@ plt.xticks(rotation=30)
 plt.show()
 
 # Cholesterol level by Age Group
-chol_age = df.groupby("Age Group", observed=True)["Cholesterol Levels (mg/dL)"].mean().sort_values(ascending=False)
-chol_age.plot(kind="barh", title="Cholesterol Level by Age Group")
+# Ensure cholesterol is numeric
+df["Cholesterol Levels (mg/dL)"] = pd.to_numeric(df["Cholesterol Levels (mg/dL)"], errors="coerce")
+
+# Create Age Group bins (if not already created)
+if "Age Group" not in df.columns:
+    df["Age Group"] = pd.cut(df["Age"], bins=[17, 25, 30, 35], labels=["18-25", "26-30", "31-35"])
+
+# Drop rows with missing values in Age Group or Cholesterol
+chol_age_df = df.dropna(subset=["Age Group", "Cholesterol Levels (mg/dL)"])
+
+# Group by age group and plot
+chol_age = chol_age_df.groupby("Age Group", observed=True)["Cholesterol Levels (mg/dL)"].mean().sort_values(ascending=False)
+chol_age.plot(kind="barh", title="Cholesterol Level by Age Group", color="skyblue")
 plt.xlabel("Cholesterol (mg/dL)")
+plt.ylabel("Age Group")
+plt.tight_layout()
 plt.show()
+
 
 # ==============================
 # Additional Visuals
@@ -106,12 +125,27 @@ plt.xticks(rotation=30)
 plt.show()
 
 # Age vs Heart Attack Count
-sns.histplot(data=df, x="Age", hue="Heart Attack", multiple="stack", bins=10)
-plt.title("Heart Attack Count by Age")
-plt.xlabel("Age")
-plt.ylabel("Count")
-plt.show()
+# Convert 'Heart Attack Likelihood' to binary
+df["Heart Attack"] = df["Heart Attack Likelihood"].apply(lambda x: 1 if x == "Yes" else 0)
 
+# Define 5 age groups between 18 and 35
+age_bins = np.linspace(18, 35, 6)  # 5 equal intervals: 18–21.4, 21.4–24.8, etc.
+age_labels = ["18-21", "22-24", "25-27", "28-30", "31-35"]
+df["Age Group"] = pd.cut(df["Age"], bins=age_bins, labels=age_labels, include_lowest=True)
+
+# Calculate percentage of heart attacks in each group
+age_group_percent = df.groupby("Age Group")["Heart Attack"].mean() * 100
+age_group_percent = age_group_percent.round(2)
+
+# Plot as bar graph
+plt.figure(figsize=(8, 5))
+sns.barplot(x=age_group_percent.index, y=age_group_percent.values, color="orange")
+plt.title("Heart Attack Percentage by Age Group (18–35)")
+plt.xlabel("Age Group")
+plt.ylabel("Heart Attack Percentage (%)")
+plt.ylim(0, 100)
+plt.tight_layout()
+plt.show()
 # ==============================
 # Tabular View by Age
 # ==============================data/heart_attack_cleaned.csv
